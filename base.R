@@ -165,6 +165,8 @@ iris@data[is.na(iris@data)] <- 0
 paris <- data.table(arr@data)
 paris <- paris[, lapply(.SD,sum), .SDcols=c('p13_pop','area','triMobileN','POU','POUP','PRE','VER','debordrue','debordverre','tonnageJaunes','tonnageVerre','tonnageVerts')]
 
+tonnage_paris <- tonnage[,lapply(.SD,sum), by = date, .SDcols=c('tonnagejaunes','tonnageverre','tonnageverts')]
+
 # Plot --------------------------------------------------------------------
 
 m <- leaflet() %>%
@@ -192,6 +194,9 @@ ggplot(a) +
 
 
 # toJSON ------------------------------------------------------------------
+
+tonnage_paris_JSON <- jsonlite::toJSON(tonnage_paris)
+jsonlite::write_json(tonnage_paris_JSON,'tonnage_paris.json')
 
 paris_JSON <- jsonlite::toJSON(paris)
 jsonlite::write_json(paris_JSON,'paris.json')
