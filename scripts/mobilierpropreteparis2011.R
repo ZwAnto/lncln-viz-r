@@ -33,3 +33,7 @@ mobilierProprete[, ':=' (
   type = 'VER',
   lib = 'Colonne de verre'
 )]
+
+mobilierProprete[,geom_x_y := NULL]
+
+names(mobilierProprete) <- tolower(names(mobilierProprete))

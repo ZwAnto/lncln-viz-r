@@ -51,6 +51,7 @@ df <- df[,.(P13_POP = sum(P13_POP),AREA = sum(AREA), NOM_COM = unique(NOM_COM)),
 arr <- merge(arr,df,by='INSEE_COM')
 
 rm(df)
-
+names(arr@data) <- tolower(names(arr@data))
+names(iris@data) <- tolower(names(iris@data))
 
 save(iris,arr,file = 'data/iris.RData')

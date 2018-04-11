@@ -38,4 +38,6 @@ for (i in c('Verre','Verts','Jaunes')){
 
 tonnage <- merge(merge(tonnageJaunes,tonnageVerre),tonnageVerts)
 
+names(tonnage) <- tolower(names(tonnage))
+
 rm(tonnageJaunes,tonnageVerts,tonnageVerre)

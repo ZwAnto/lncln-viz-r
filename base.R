@@ -27,6 +27,8 @@ library(data.table)
 library(rgeos)
 library(leaflet)
 library(reshape2)
+library(geojsonio)
+library(jsonlite)
 
 # Liens -------------------------------------------------------------------
 
@@ -63,7 +65,7 @@ check <- sapply(check,function(x){
   return(x)
 })
 
-triMobile$CODE_IRIS <- iris$CODE_IRIS[check]
+triMobile$code_iris <- iris$code_iris[check]
 
 # Affecting iris to mobilier --------------------------------------
 
@@ -80,7 +82,7 @@ check <- sapply(check,function(x){
   return(x)
 })
 
-mobilier$CODE_IRIS <- iris$CODE_IRIS[check]
+mobilier$code_iris <- iris$code_iris[check]
 
 #' Si on veut rajouter les poubelle hors des limites de paris
 #' Affectation à l'IRIS la plus proche
@@ -93,7 +95,7 @@ mobilier$CODE_IRIS <- iris$CODE_IRIS[check]
 # 
 # mobilier[is.na(CODE_IRIS), CODE_IRIS := iris$CODE_IRIS[check]] 
 
-mobilier <- mobilier[!is.na(CODE_IRIS),]
+mobilier <- mobilier[!is.na(code_iris),]
 
 # Affecting iris to dans ma rue -----------------------------------
 
@@ -110,27 +112,27 @@ check <- sapply(check,function(x){
   return(x)
 })
 
-dansMaRue$CODE_IRIS <- iris$CODE_IRIS[check]
+dansMaRue$code_iris <- iris$code_iris[check]
 
-dansMaRue <- dansMaRue[!is.na(CODE_IRIS),]
+dansMaRue <- dansMaRue[!is.na(code_iris),]
 
 # Arr ---------------------------------------------------------------------
 
-triMobile[, INSEE_COM := substr(CODE_IRIS,1,5)]
-mobilier[, INSEE_COM := substr(CODE_IRIS,1,5)]
-dansMaRue[, INSEE_COM := substr(CODE_IRIS,1,5)]
+triMobile[, insee_com := substr(code_iris,1,5)]
+mobilier[, insee_com := substr(code_iris,1,5)]
+dansMaRue[, insee_com := substr(code_iris,1,5)]
 
-triMobileArr <- triMobile[, .(triMobileN = sum(jours_n)), by=INSEE_COM]
+triMobileArr <- triMobile[, .(triMobileN = sum(jours_n)), by=insee_com]
 
-mobilierArr <- mobilier[, .(mobilierN = .N), by=.(type,lib,INSEE_COM)]
-mobilierArr <- dcast(mobilierArr,INSEE_COM ~ type)
+mobilierArr <- mobilier[, .(mobilierN = .N), by=.(type,lib,insee_com)]
+mobilierArr <- dcast(mobilierArr,insee_com ~ type)
 
-dansMaRueArr <- dansMaRue[, .(dansMaRueN = .N), by=.(TYPE,SOUSTYPE,INSEE_COM)]
-dansMaRueArr[grepl('rue', SOUSTYPE), TYPE := 'DEBORDRUE']
-dansMaRueArr[grepl('verre', SOUSTYPE), TYPE := 'DEBORDVERRE']
-dansMaRueArr <- dcast(dansMaRueArr,INSEE_COM ~ TYPE)
+dansMaRueArr <- dansMaRue[, .(dansMaRueN = .N), by=.(type,soustype,insee_com)]
+dansMaRueArr[grepl('rue', soustype), type := 'debordrue']
+dansMaRueArr[grepl('verre', soustype), type := 'debordverre']
+dansMaRueArr <- dcast(dansMaRueArr,insee_com ~ type)
 
-tonnageArr <- tonnage[, .(tonnageJaunes=sum(tonnageJaunes),tonnageVerre=sum(tonnageVerre),tonnageVerts=sum(tonnageVerts)),by=INSEE_COM]
+tonnageArr <- tonnage[, .(tonnageJaunes=sum(tonnagejaunes),tonnageVerre=sum(tonnageverre),tonnageVerts=sum(tonnageverts)),by=insee_com]
 
 arr <- merge(arr,triMobileArr)
 arr <- merge(arr,mobilierArr)
@@ -142,15 +144,15 @@ arr@data[is.na(arr@data)] <- 0
 # Iris --------------------------------------------------------------------
 
 
-triMobileIris <- triMobile[, .(triMobileN = sum(jours_n)), by=CODE_IRIS]
+triMobileIris <- triMobile[, .(triMobileN = sum(jours_n)), by=code_iris]
 
-mobilierIris <- mobilier[, .(mobilierN = .N), by=.(type,lib,CODE_IRIS)]
-mobilierIris <- dcast(mobilierIris,CODE_IRIS ~ type)
+mobilierIris <- mobilier[, .(mobilierN = .N), by=.(type,lib,code_iris)]
+mobilierIris <- dcast(mobilierIris,code_iris ~ type)
 
-dansMaRueIris <- dansMaRue[, .(dansMaRueN = .N), by=.(TYPE,SOUSTYPE,CODE_IRIS)]
-dansMaRueIris[grepl('rue', SOUSTYPE), TYPE := 'DEBORDRUE']
-dansMaRueIris[grepl('verre', SOUSTYPE), TYPE := 'DEBORDVERRE']
-dansMaRueIris <- dcast(dansMaRueIris,CODE_IRIS ~ TYPE)
+dansMaRueIris <- dansMaRue[, .(dansMaRueN = .N), by=.(type,soustype,code_iris)]
+dansMaRueIris[grepl('rue', soustype), type := 'debordrue']
+dansMaRueIris[grepl('verre', soustype), type := 'debordverre']
+dansMaRueIris <- dcast(dansMaRueIris,code_iris ~ type)
 
 iris <- merge(iris,triMobileIris)
 iris <- merge(iris,mobilierIris)
@@ -158,11 +160,10 @@ iris <- merge(iris,dansMaRueIris)
 
 iris@data[is.na(iris@data)] <- 0
 
-
 # Paris -------------------------------------------------------------------
 
 paris <- data.table(arr@data)
-paris <- paris[, lapply(.SD,sum), .SDcols=c('P13_POP','AREA','triMobileN','POU','POUP','PRE','VER','DEBORDRUE','DEBORDVERRE','tonnageJaunes','tonnageVerre','tonnageVerts')]
+paris <- paris[, lapply(.SD,sum), .SDcols=c('p13_pop','area','triMobileN','POU','POUP','PRE','VER','debordrue','debordverre','tonnageJaunes','tonnageVerre','tonnageVerts')]
 
 # Plot --------------------------------------------------------------------
 
@@ -192,7 +193,9 @@ ggplot(a) +
 
 # toJSON ------------------------------------------------------------------
 
-# a <- geojsonio::geojson_json(iris)
-# 
-# geojsonio::geojson_write(a, file = "F:/Challenge OpenDataParis/iris.geojson")
+paris_JSON <- jsonlite::toJSON(paris)
+jsonlite::write_json(paris_JSON,'paris.json')
+
+arr_GEOJSON <- geojsonio::geojson_json(arr)
+geojsonio::geojson_write(arr_GEOJSON, file = "arr.geojson")
 

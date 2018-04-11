@@ -29,3 +29,5 @@ dansMaRue[, DATE := substr(DATEDECL,1,10)]
 dansMaRue[, DATE := as.Date(DATE)]
 
 dansMaRue[,DATEDECL := NULL]
+
+names(dansMaRue) <- tolower(names(dansMaRue))

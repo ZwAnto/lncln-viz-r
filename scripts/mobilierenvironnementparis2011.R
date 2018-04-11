@@ -22,7 +22,11 @@ mobilierEnvironnement[, geom := NULL]
 mobilierEnvironnement[, lat := scan(geom_x_y,',',1)]
 mobilierEnvironnement[, lon := scan(geom_x_y,',',2)]
 
+mobilierEnvironnement[,geom_x_y := NULL]
+
 plot(factor(mobilierEnvironnement$Type.Mobilier))
 
 setnames(mobilierEnvironnement,'Type.Mobilier','type')
 setnames(mobilierEnvironnement,'Libelle.Mobilier','lib')
+
+names(mobilierEnvironnement) <- tolower(names(mobilierEnvironnement))
