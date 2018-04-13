@@ -50,6 +50,8 @@ source('scripts/dans-ma-rue.R',encoding = 'UTF-8')
 
 source('scripts/tonnage.R',encoding = 'UTF-8')
 
+colors <- c('#1F363D','#40798C','#70A9A1','#9EC1A3','#CFE0C3')
+colors_r <- rev(colors)
 # Affecting iris to tri Mobile --------------------------------------------
 
 coords <- as.matrix(triMobile[,.(as.numeric(lon),as.numeric(lat))])
@@ -165,7 +167,41 @@ iris@data[is.na(iris@data)] <- 0
 paris <- data.table(arr@data)
 paris <- paris[, lapply(.SD,sum), .SDcols=c('p13_pop','area','triMobileN','POU','POUP','PRE','VER','debordrue','debordverre','tonnageJaunes','tonnageVerre','tonnageVerts')]
 
-tonnage_paris <- tonnage[,lapply(.SD,sum), by = date, .SDcols=c('tonnagejaunes','tonnageverre','tonnageverts')]
+tonnageParis <- tonnage[,lapply(.SD,sum), by = date, .SDcols=c('tonnagejaunes','tonnageverre','tonnageverts')]
+
+
+dansMaRueParis <- dansMaRue[, .(dansMaRueN = .N), by=.(type,date)]
+# dansMaRueParis[grepl('rue', soustype), type := 'debordrue']
+# dansMaRueParis[grepl('verre', soustype), type := 'debordverre']
+dansMaRueParis[, date := as.Date(paste(year(date),formatC(month(date),width=2,flag='0'),'01',sep = '-'))]
+dansMaRueParis <- dansMaRueParis[, .(dansMaRueN = sum(dansMaRueN,na.rm = T)), by=.(type,date)]
+
+# TO JSON
+dansMaRueParis[,date2 := as.numeric(as.POSIXct.Date(date))*1000]
+dansMaRueParis[, date := NULL]
+setnames(dansMaRueParis,"date2",'date')
+
+dansMaRueParis_JSON <- list()
+
+for (i in unique(dansMaRueParis$type)){
+  temp <- dansMaRueParis[type==i,]
+  temp[,data := paste0('[',date,',',dansMaRueN,']')]
+  
+  temp <- temp[, .(data = paste0(data,collapse = ',')),by=type]
+  temp[, data := paste0('[',data,']')]
+  setnames(temp,'type','name')
+  dansMaRueParis_JSON[[i]] <- temp
+}
+
+dansMaRueParis_JSON <- rbindlist(dansMaRueParis_JSON)
+
+dansMaRueParis_JSON[, color := colors_r[1:.N]]
+
+dansMaRueParis_JSON[,json := paste0('{"name": "',name,'", "data": ',data,', "color": "',color,'"}')]
+dansMaRueParis_JSON <- dansMaRueParis_JSON[, .(json = paste0(json,collapse = ','))]
+dansMaRueParis_JSON[, json := paste0('[',json,']')]
+
+write.table(dansMaRueParis_JSON,file = 'dansMaRue_paris.json',quote = F,row.names = F,col.names = F,fileEncoding = 'UTF-8')
 
 # Plot --------------------------------------------------------------------
 
@@ -195,7 +231,7 @@ ggplot(a) +
 
 # toJSON ------------------------------------------------------------------
 
-tonnage_paris_JSON <- jsonlite::toJSON(tonnage_paris)
+tonnageParis_JSON <- jsonlite::toJSON(tonnageParis)
 jsonlite::write_json(tonnage_paris_JSON,'tonnage_paris.json')
 
 paris_JSON <- jsonlite::toJSON(paris)

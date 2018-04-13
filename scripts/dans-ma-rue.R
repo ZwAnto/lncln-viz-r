@@ -13,7 +13,10 @@ dansMaRue <- fread('data/dans-ma-rue.csv',encoding = 'UTF-8')
 dansMaRue[, unique(TYPE)]
 dansMaRue[, unique(paste(TYPE,'|',SOUSTYPE))]
 
-dansMaRue <- dansMaRue[TYPE == 'Propreté' & grepl('(rue|verre) débord', SOUSTYPE)]
+# dansMaRue <- dansMaRue[TYPE == 'Propreté' & grepl('(rue|verre) débord', SOUSTYPE)]
+
+dansMaRue <- dansMaRue[TYPE %in% c('Propreté',"Graffitis, tags, affiches et autocollants","Objets abandonnés")]
+
 
 dansMaRue[, lat := scan(geo_point_2d,',',1)]
 dansMaRue[, lon := scan(geo_point_2d,',',2)]
