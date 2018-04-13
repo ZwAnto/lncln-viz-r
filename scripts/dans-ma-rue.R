@@ -21,7 +21,7 @@ dansMaRue <- dansMaRue[TYPE %in% c('Propreté',"Graffitis, tags, affiches et aut
 dansMaRue[, lat := scan(geo_point_2d,',',1)]
 dansMaRue[, lon := scan(geo_point_2d,',',2)]
 
-dansMaRue <- dansMaRue[, .(TYPE, SOUSTYPE, lon, lat, DATEDECL)]
+dansMaRue <- dansMaRue[, .(TYPE, SOUSTYPE, lon, lat, DATEDECL,NUMERO)]
 
 dansMaRue[, ':='(
   lat = as.numeric(lat),
@@ -34,3 +34,5 @@ dansMaRue[, DATE := as.Date(DATE)]
 dansMaRue[,DATEDECL := NULL]
 
 names(dansMaRue) <- tolower(names(dansMaRue))
+
+dansMaRue <- dansMaRue[date < "2017-10-01",]

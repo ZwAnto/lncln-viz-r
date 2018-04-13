@@ -124,7 +124,7 @@ triMobile[, insee_com := substr(code_iris,1,5)]
 mobilier[, insee_com := substr(code_iris,1,5)]
 dansMaRue[, insee_com := substr(code_iris,1,5)]
 
-triMobileArr <- triMobile[, .(triMobileN = sum(jours_n)), by=insee_com]
+triMobileArr <- triMobile[, .(triMobileN = sum(jours_n), triMobileNGeo = .N), by=insee_com]
 
 mobilierArr <- mobilier[, .(mobilierN = .N), by=.(type,lib,insee_com)]
 mobilierArr <- dcast(mobilierArr,insee_com ~ type)
@@ -146,7 +146,7 @@ arr@data[is.na(arr@data)] <- 0
 # Iris --------------------------------------------------------------------
 
 
-triMobileIris <- triMobile[, .(triMobileN = sum(jours_n)), by=code_iris]
+triMobileIris <- triMobile[, .(triMobileN = sum(jours_n), triMobileNGeo = .N), by=code_iris]
 
 mobilierIris <- mobilier[, .(mobilierN = .N), by=.(type,lib,code_iris)]
 mobilierIris <- dcast(mobilierIris,code_iris ~ type)
@@ -165,43 +165,110 @@ iris@data[is.na(iris@data)] <- 0
 # Paris -------------------------------------------------------------------
 
 paris <- data.table(arr@data)
-paris <- paris[, lapply(.SD,sum), .SDcols=c('p13_pop','area','triMobileN','POU','POUP','PRE','VER','debordrue','debordverre','tonnageJaunes','tonnageVerre','tonnageVerts')]
+paris <- paris[, lapply(.SD,sum), .SDcols=c('p13_pop','area','triMobileN','triMobileNGeo','POU','POUP','PRE','VER','debordrue','debordverre','tonnageJaunes','tonnageVerre','tonnageVerts')]
 
-tonnageParis <- tonnage[,lapply(.SD,sum), by = date, .SDcols=c('tonnagejaunes','tonnageverre','tonnageverts')]
+paris$p13_pop_m = paris$p13_pop / 1000000
+paris$tonnage = paris$tonnageJaunes + paris$tonnageVerre + paris$tonnageVerts
+paris$tonnage_hab = paris$tonnage / paris$p13_pop * 1000
+paris$pou_hab = paris$p13_pop / paris$POU
+paris$pou_m = 1 / sqrt(paris$POU / (paris$area))
+
+paris_JSON <- paste0('{',paste0(paste0('"',names(paris),'": '),paris,collapse = ','),'}')
+write.table(paris_JSON,file = 'paris.json',quote = F,row.names = F,col.names = F,fileEncoding = 'UTF-8')
 
 
-dansMaRueParis <- dansMaRue[, .(dansMaRueN = .N), by=.(type,date)]
+dansMaRueParis <- dansMaRue[, .(dansMaRueN = .N), by=.(type,soustype,date)]
 # dansMaRueParis[grepl('rue', soustype), type := 'debordrue']
 # dansMaRueParis[grepl('verre', soustype), type := 'debordverre']
 dansMaRueParis[, date := as.Date(paste(year(date),formatC(month(date),width=2,flag='0'),'01',sep = '-'))]
-dansMaRueParis <- dansMaRueParis[, .(dansMaRueN = sum(dansMaRueN,na.rm = T)), by=.(type,date)]
+dansMaRueParis <- dansMaRueParis[, .(dansMaRueN = sum(dansMaRueN,na.rm = T)), by=.(type,soustype,date)]
 
-# TO JSON
-dansMaRueParis[,date2 := as.numeric(as.POSIXct.Date(date))*1000]
-dansMaRueParis[, date := NULL]
-setnames(dansMaRueParis,"date2",'date')
+# Dans ma rue paris soustype JSON -----------------------------------------
+# 
+# dansMaRueParis <- dansMaRueParis[order(date),]
+# dansMaRueParis[,date2 := as.numeric(as.POSIXct.Date(date))*1000]
+# dansMaRueParis[, date := NULL]
+# setnames(dansMaRueParis,"date2",'date')
+# 
+# 
+# dansMaRueParis_JSON <- list()
+# for (i in unique(dansMaRueParis$type)){
+# 
+#   for (j in unique(dansMaRueParis[type==i,soustype])){
+#     temp <- dansMaRueParis[type==i & soustype == j,]
+#     temp[,data := paste0('{"x": ',date,', "y": ',dansMaRueN,'}')]
+#     
+#     temp <- temp[, .(data = paste0(data,collapse = ',')),by=.(type,soustype)]
+#     temp[, data := paste0('[',data,']')]
+#     setnames(temp,'type','name')
+#     dansMaRueParis_JSON[[j]] <- temp
+#     break
+#   }
+# }
+# 
+# dansMaRueParis_JSON <- rbindlist(dansMaRueParis_JSON)
+# 
+# dansMaRueParis_JSON[,json := paste0('{"id": "',name,'", "name": "',soustype,'", "data": ',data,'}')]
+# dansMaRueParis_JSON <- dansMaRueParis_JSON[, .(json = paste0(json,collapse = ','))]
+# dansMaRueParis_JSON[, json := paste0('[',json,']')]
+# 
+# write.table(dansMaRueParis_JSON,file = 'dansMaRue_paris_soustype.json',quote = F,row.names = F,col.names = F,fileEncoding = 'UTF-8')
 
-dansMaRueParis_JSON <- list()
+# Dans ma rue paris type JSON ---------------------------------------------
 
-for (i in unique(dansMaRueParis$type)){
-  temp <- dansMaRueParis[type==i,]
-  temp[,data := paste0('[',date,',',dansMaRueN,']')]
+dansMaRueParisType <- dansMaRueParis[, .(dansMaRueN = sum(dansMaRueN,na.rm = T)), by=.(type,date)]
+dansMaRueParisType <- dansMaRueParisType[order(date),]
+dansMaRueParisType[,date2 := as.numeric(as.POSIXct.Date(date))*1000]
+dansMaRueParisType[, date := NULL]
+setnames(dansMaRueParisType,"date2",'date')
+
+dansMaRueParisType_JSON <- list()
+
+for (i in unique(dansMaRueParisType$type)){
+  temp <- dansMaRueParisType[type==i,]
+  temp[,data := paste0('{"x": ',date,', "y": ',dansMaRueN,', "drilldown": "',type,'"}')]
   
   temp <- temp[, .(data = paste0(data,collapse = ',')),by=type]
   temp[, data := paste0('[',data,']')]
   setnames(temp,'type','name')
-  dansMaRueParis_JSON[[i]] <- temp
+  dansMaRueParisType_JSON[[i]] <- temp
 }
 
-dansMaRueParis_JSON <- rbindlist(dansMaRueParis_JSON)
+dansMaRueParisType_JSON <- rbindlist(dansMaRueParisType_JSON)
 
-dansMaRueParis_JSON[, color := colors_r[1:.N]]
+dansMaRueParisType_JSON[, color := colors_r[1:.N]]
 
-dansMaRueParis_JSON[,json := paste0('{"name": "',name,'", "data": ',data,', "color": "',color,'"}')]
-dansMaRueParis_JSON <- dansMaRueParis_JSON[, .(json = paste0(json,collapse = ','))]
-dansMaRueParis_JSON[, json := paste0('[',json,']')]
+dansMaRueParisType_JSON[,json := paste0('{"name": "',name,'", "data": ',data,', "color": "',color,'"}')]
+dansMaRueParisType_JSON <- dansMaRueParisType_JSON[, .(json = paste0(json,collapse = ','))]
+dansMaRueParisType_JSON[, json := paste0('[',json,']')]
 
-write.table(dansMaRueParis_JSON,file = 'dansMaRue_paris.json',quote = F,row.names = F,col.names = F,fileEncoding = 'UTF-8')
+write.table(dansMaRueParisType_JSON,file = 'dansMaRue_paris_type.json',quote = F,row.names = F,col.names = F,fileEncoding = 'UTF-8')
+
+
+
+
+# tonnage paris JSON ------------------------------------------------------
+
+tonnageParis <- tonnage[,lapply(.SD,sum), by = date, .SDcols=c('tonnagejaunes','tonnageverre','tonnageverts')]
+
+tonnageParis_JSON <- tonnageParis
+
+tonnageParis_JSON[,date2 := format(as.numeric(as.POSIXct.Date(date))*1000,scientific = F)]
+tonnageParis_JSON[, date := NULL]
+setnames(tonnageParis_JSON,"date2",'date')
+
+
+tonnageverre <- tonnageParis_JSON[, paste0('{"x": ',date,', "y" : ',tonnageverre,'}',collapse = ',')]
+tonnagejaunes <- tonnageParis_JSON[, paste0('{"x": ',date,', "y" : ',tonnagejaunes,'}',collapse = ',')]
+tonnageverts <- tonnageParis_JSON[, paste0('{"x": ',date,', "y" : ',tonnageverts,'}',collapse = ',')]
+
+tonnageverre <- paste0('{"name": "Jaunes", "color": "#cfe0c3", "data" : [',tonnageverre,']}')
+tonnagejaunes <- paste0('{"name": "Verres", "color": "#70a9a1", "data" : [',tonnagejaunes,']}')
+tonnageverts <- paste0('{"name": "Vertes", "color": "#9ec1a3", "data" : [',tonnageverts,']}')
+
+tonnageParis_JSON <- paste0('[',paste0(tonnageverre,',',tonnagejaunes,',',tonnageverts),']')
+
+write.table(tonnageParis_JSON,file = 'tonnage_paris.json',quote = F,row.names = F,col.names = F,fileEncoding = 'UTF-8')
 
 # Plot --------------------------------------------------------------------
 
@@ -213,12 +280,12 @@ m <- leaflet() %>%
                                                   bringToFront = TRUE),popup = ~CODE_IRIS) %>% 
   addPolygons(data=arr)
 
-  addCircles(map= m ,data = dansMaRue,lng = ~lon, lat = ~lat, weight = 1,
-             radius = 2
-  )
+addCircles(map= m ,data = dansMaRue,lng = ~lon, lat = ~lat, weight = 1,
+           radius = 2
+)
 
-  m
-  
+m
+
 a <- merge(mobilier,iris@data,by='CODE_IRIS')
 a <- a[,.(.N,sum(P13_POP)),by=.(INSEE_COM,CODE_IRIS)]
 
@@ -230,12 +297,6 @@ ggplot(a) +
 
 
 # toJSON ------------------------------------------------------------------
-
-tonnageParis_JSON <- jsonlite::toJSON(tonnageParis)
-jsonlite::write_json(tonnage_paris_JSON,'tonnage_paris.json')
-
-paris_JSON <- jsonlite::toJSON(paris)
-jsonlite::write_json(paris_JSON,'paris.json')
 
 arr_GEOJSON <- geojsonio::geojson_json(arr)
 geojsonio::geojson_write(arr_GEOJSON, file = "arr.geojson")
