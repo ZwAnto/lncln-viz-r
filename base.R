@@ -40,16 +40,16 @@ library(jsonlite)
 load('data/iris.RData')
 
 # Tri mobile
-source('scripts/triMobile.R')
+source('scripts/importation/triMobile.R')
 
 # Mobilier
-source('scripts/mobilierparis2011.R')
+source('scripts/importation/mobilierparis2011.R')
 
 # dans ma rue
-source('scripts/dans-ma-rue.R',encoding = 'UTF-8')
+source('scripts/importation/dans-ma-rue.R',encoding = 'UTF-8')
 
 # Tonnage
-source('scripts/tonnage.R',encoding = 'UTF-8')
+source('scripts/importation/tonnage.R',encoding = 'UTF-8')
 
 # Color vector
 colors <- c('#1F363D','#40798C','#70A9A1','#9EC1A3','#CFE0C3')
@@ -90,7 +90,7 @@ check <- sapply(check,function(x){
 mobilier$code_iris <- iris$code_iris[check]
 
 #' Si on veut rajouter les poubelle hors des limites de paris
-#' Affectation à l'IRIS la plus proche
+#' Affectation ? l'IRIS la plus proche
 
 # coords <- as.matrix(mobilier[is.na(CODE_IRIS),.(as.numeric(lon),as.numeric(lat))])
 # points <- SpatialPoints(coords,CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
@@ -129,22 +129,22 @@ dansMaRue[, insee_com := substr(code_iris,1,5)]
 
 # JSON Generation ---------------------------------------------------------
 
-source('gen_iris_geojson.R',encoding = 'UTF-8')
+source('scripts/generation/gen_iris_geojson.R',encoding = 'UTF-8')
 
-source('gen_arr_geojson.R',encoding = 'UTF-8')
+source('scripts/generation/gen_arr_geojson.R',encoding = 'UTF-8')
 
-source('gen_paris_json.R',encoding = 'UTF-8')
+source('scripts/generation/gen_paris_json.R',encoding = 'UTF-8')
 
-source('gen_dansMaRue_paris_json.R', encoding = 'UTF-8')
+source('scripts/generation/gen_dansMaRue_paris_json.R', encoding = 'UTF-8')
 
-source('gen_tonnage_paris_json.R', encoding = 'UTF-8')
+source('scripts/generation/gen_tonnage_paris_json.R', encoding = 'UTF-8')
 
-source('gen_mobilier_geojson.R', encoding = 'UTF-8')
+source('scripts/generation/gen_mobilier_geojson.R', encoding = 'UTF-8')
 
-source('gen_triMobile_geojson.R', encoding = 'UTF-8')
+source('scripts/generation/gen_triMobile_geojson.R', encoding = 'UTF-8')
 
-source('gen_scatter_arr_json.R', encoding = 'UTF-8')
+source('scripts/generation/gen_scatter_arr_json.R', encoding = 'UTF-8')
 
-source('gen_tonnageHab_arr_json.R', encoding = 'UTF-8')
+source('scripts/generation/gen_tonnageHab_arr_json.R', encoding = 'UTF-8')
 
-source('gen_tonnage_arr_json.R', encoding = 'UTF-8')
+source('scripts/generation/gen_tonnage_arr_json.R', encoding = 'UTF-8')
