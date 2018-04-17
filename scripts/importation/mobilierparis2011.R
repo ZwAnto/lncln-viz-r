@@ -8,8 +8,8 @@
 #                                                                         #
 ######################################################################### #
 
-source('scripts/mobilierenvironnementparis2011.R')
-source('scripts/mobilierpropreteparis2011.R')
+source('scripts/importation/mobilierenvironnementparis2011.R')
+source('scripts/importation/mobilierpropreteparis2011.R')
 
 mobilier <- rbindlist(list(mobilierEnvironnement,mobilierProprete),use.names = T)
 
