@@ -2,7 +2,7 @@
 triMobileIris <- triMobile[, .(triMobileN = sum(jours_n), triMobileNGeo = .N), by=code_iris]
 
 mobilierIris <- mobilier[, .(mobilierN = .N), by=.(type,lib,code_iris)]
-mobilierIris <- dcast(mobilierIris,code_iris ~ type)
+mobilierIris <- data.table::dcast(mobilierIris,code_iris ~ type,fun.aggregate = sum,value.var = "mobilierN")
 
 dansMaRueIris <- dansMaRue[, .(dansMaRueN = .N), by=.(type,soustype,code_iris)]
 # dansMaRueIris[grepl('rue', soustype), type := 'debordrue']
@@ -10,7 +10,7 @@ dansMaRueIris <- dansMaRue[, .(dansMaRueN = .N), by=.(type,soustype,code_iris)]
 dansMaRueIris[grepl('Graffitis', type), type := 'graffitis']
 dansMaRueIris[grepl('abandonnés', type), type := 'abandonnes']
 dansMaRueIris[grepl('Propreté', type), type := 'proprete']
-dansMaRueIris <- dcast(dansMaRueIris,code_iris ~ type,fun.aggregate = sum)
+dansMaRueIris <- data.table::dcast(dansMaRueIris,code_iris ~ type,fun.aggregate = sum)
 
 iris <- merge(iris,triMobileIris)
 iris <- merge(iris,mobilierIris)

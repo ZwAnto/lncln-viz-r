@@ -17,6 +17,8 @@ computeIndicators <- function(data){
   try(data[, tonnage := tonnageJaunes + tonnageVerre + tonnageVerts], silent = T)
   try(data[, tonnage_hab := tonnage / p13_pop * 1000], silent = T)
   
+  data[, dansMaRue := abandonnes + graffitis + proprete]
+  
   data[is.na(data)] <- 0
   
   return(data)

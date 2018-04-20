@@ -19,4 +19,4 @@ mobilier[, ':='(
   lat = as.numeric(lat)
 )]
 
-rm(mobilierEnvironnement,mobilierProprete,trilib)
+rm(mobilierEnvironnement,mobilierProprete)
