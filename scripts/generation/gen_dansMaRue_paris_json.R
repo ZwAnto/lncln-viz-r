@@ -24,9 +24,10 @@ for (i in unique(dansMaRueParis$type)){
 
 dansMaRueParis_JSON <- rbindlist(dansMaRueParis_JSON)
 
-dansMaRueParis_JSON[, color := colors_r[1:.N]]
+# dansMaRueParis_JSON[, color := colors_r[1:.N]]
 
-dansMaRueParis_JSON[,json := paste0('{"name": "',name,'", "data": ',data,', "color": "',color,'"}')]
+# dansMaRueParis_JSON[,json := paste0('{"name": "',name,'", "data": ',data,', "color": "',color,'"}')]
+dansMaRueParis_JSON[,json := paste0('{"name": "',name,'", "data": ',data,'}')]
 dansMaRueParis_JSON <- dansMaRueParis_JSON[, .(json = paste0(json,collapse = ','))]
 dansMaRueParis_JSON[, json := paste0('[',json,']')]
 

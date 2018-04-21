@@ -10,9 +10,12 @@ tonnageverre <- tonnageParis_JSON[, paste0('{"x": ',date,', "y" : ',tonnageverre
 tonnagejaunes <- tonnageParis_JSON[, paste0('{"x": ',date,', "y" : ',tonnagejaunes,'}',collapse = ',')]
 tonnageverts <- tonnageParis_JSON[, paste0('{"x": ',date,', "y" : ',tonnageverts,'}',collapse = ',')]
 
-tonnageverre <- paste0('{"name": "Jaunes", "color": "#cfe0c3", "data" : [',tonnageverre,']}')
-tonnagejaunes <- paste0('{"name": "Verres", "color": "#70a9a1", "data" : [',tonnagejaunes,']}')
-tonnageverts <- paste0('{"name": "Vertes", "color": "#9ec1a3", "data" : [',tonnageverts,']}')
+# tonnageverre <- paste0('{"name": "Jaunes", "color": "#cfe0c3", "data" : [',tonnageverre,']}')
+# tonnagejaunes <- paste0('{"name": "Verres", "color": "#70a9a1", "data" : [',tonnagejaunes,']}')
+# tonnageverts <- paste0('{"name": "Vertes", "color": "#9ec1a3", "data" : [',tonnageverts,']}')
+tonnageverre <- paste0('{"name": "Jaunes", "data" : [',tonnageverre,']}')
+tonnagejaunes <- paste0('{"name": "Verres", "data" : [',tonnagejaunes,']}')
+tonnageverts <- paste0('{"name": "Vertes", "data" : [',tonnageverts,']}')
 
 tonnageParis_JSON <- paste0('[',paste0(tonnageverre,',',tonnagejaunes,',',tonnageverts),']')
 
