@@ -5,16 +5,25 @@ mobilierIris <- mobilier[, .(mobilierN = .N), by=.(type,lib,code_iris)]
 mobilierIris <- data.table::dcast(mobilierIris,code_iris ~ type,fun.aggregate = sum,value.var = "mobilierN")
 
 dansMaRueIris <- dansMaRue[, .(dansMaRueN = .N), by=.(type,soustype,code_iris)]
+dansMaRueIrisTot <- dansMaRueIris[, .(dansMaRueN = sum(dansMaRueN,na.rm = T)), by=.(code_iris)]
+dansMaRueIrisTot[, type := 'total']
+dansMaRueIrisTot[, soustype := 'total']
 # dansMaRueIris[grepl('rue', soustype), type := 'debordrue']
 # dansMaRueIris[grepl('verre', soustype), type := 'debordverre']
 dansMaRueIris[grepl('Graffitis', type), type := 'graffitis']
 dansMaRueIris[grepl('abandonnés', type), type := 'abandonnes']
 dansMaRueIris[grepl('Propreté', type), type := 'proprete']
+
+dansMaRueIris <- rbind(dansMaRueIris,dansMaRueIrisTot)
+dansMaRueIris <- dansMaRueIris[type %in% c('total','graffitis','abandonnes','proprete')]
 dansMaRueIris <- data.table::dcast(dansMaRueIris,code_iris ~ type,fun.aggregate = sum)
 
+trilibIris <- trilib[,.(trilibNStation = length(unique(paste0(lon,lat))), trilibNBac = .N),by=.(code_iris)]
+    
 iris <- merge(iris,triMobileIris)
 iris <- merge(iris,mobilierIris)
 iris <- merge(iris,dansMaRueIris)
+iris <- merge(iris,trilibIris)
 
 iris@data[is.na(iris@data)] <- 0
 

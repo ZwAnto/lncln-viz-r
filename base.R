@@ -121,6 +121,23 @@ dansMaRue$code_iris <- iris$code_iris[check]
 
 dansMaRue <- dansMaRue[!is.na(code_iris),]
 
+# Affecting iris to trilib ------------------------------------------------
+
+coords <- as.matrix(trilib[,.(as.numeric(lon),as.numeric(lat))])
+points <- SpatialPoints(coords,CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+
+check <- gContains(iris,points,byid = T)
+check <- apply(check,1,which)
+
+check <- sapply(check,function(x){
+  if (!length(x)){
+    return(NA)
+  } 
+  return(x)
+})
+
+trilib$code_iris <- iris$code_iris[check]
+
 # Creating insee_com ------------------------------------------------------
 
 triMobile[, insee_com := substr(code_iris,1,5)]
