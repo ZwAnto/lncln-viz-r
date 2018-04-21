@@ -18,7 +18,7 @@ lapply(list.files('fun',pattern = '[.](r|R)$',full.names = T),source)
 
 # Packages ----------------------------------------------------------------
 
-# install.packages(c('rgdal','ggplot2','sp','data.table','doParallel','foreach','rgeos','leaflet'))
+# install.packages(c('geojsonio','rgdal','ggplot2','sp','data.table','doParallel','foreach','rgeos','leaflet','geojsonlint'))
 
 library(rgdal)
 library(sp)
