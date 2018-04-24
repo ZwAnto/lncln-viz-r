@@ -10,7 +10,7 @@
 
 # Working directory -------------------------------------------------------
 
-setwd('E:/Challenge OpenDataParis/')
+setwd('C:/Users/AntoH/Documents/GitHub/lncln-viz-r/')
 
 # Fun ---------------------------------------------------------------------
 
@@ -18,7 +18,7 @@ lapply(list.files('fun',pattern = '[.](r|R)$',full.names = T),source)
 
 # Packages ----------------------------------------------------------------
 
-# install.packages(c('rgdal','ggplot2','sp','data.table','doParallel','foreach','rgeos','leaflet'))
+# install.packages(c('geojsonio','rgdal','ggplot2','sp','data.table','doParallel','foreach','rgeos','leaflet','geojsonlint'))
 
 library(rgdal)
 library(sp)
@@ -50,6 +50,9 @@ source('scripts/importation/dans-ma-rue.R',encoding = 'UTF-8')
 
 # Tonnage
 source('scripts/importation/tonnage.R',encoding = 'UTF-8')
+
+# VilleIdeale
+source('scripts/importation/ville-ideale.R',encoding = 'UTF-8')
 
 # Color vector
 colors <- c('#1F363D','#40798C','#70A9A1','#9EC1A3','#CFE0C3')

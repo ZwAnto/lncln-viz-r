@@ -3,6 +3,8 @@ arrData <- copy(iris@data[,lapply(.SD,sum),.SDcols=varBase,by=.(insee_com,nom_co
 
 tonnageArr <- tonnage[, .(tonnageJaunes=sum(tonnagejaunes),tonnageVerre=sum(tonnageverre),tonnageVerts=sum(tonnageverts)),by=insee_com]
 arrData <- merge(arrData,tonnageArr)
+arrData <- merge(arrData,villeIdeale)
+
 
 varBase <- names(arrData)[!(names(arrData) %in% c("code_iris","insee_com","nom_com","iris","nom_iris","typ_iris","id"))]
 
